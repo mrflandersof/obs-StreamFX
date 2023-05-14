@@ -471,3 +471,24 @@ jobs:
       shell: bash
       run: |
         cmake --build "build/ci" --config RelWithDebInfo --target StreamFX
+
+    - name: "Packaging"
+      shell: bash
+      run: |
+        mkdir "${{ github.workspace }}/build/package"
+        cmake --build "${{ github.workspace }}/build/ci" --config RelWithDebInfo --target PACKAGE_7Z
+    - name: "Packaging (Windows)"
+      if: startsWith( matrix.runner, 'windows' )
+      shell: cmd
+      run: |
+        "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /V10 ".\build\ci\installer.iss"
+    - name: "Packaging (MacOS)"
+      if: startsWith( matrix.runner, 'macos' )
+      shell: bash
+      run: |
+        packagesbuild "${{ github.workspace }}/build/ci/installer.pkgproj"
+    - name: "Artifacts"
+      uses: actions/upload-artifact@v1
+      with:
+        name: "${{ matrix.runner }}-${{ matrix.generator }}-qt${{ matrix.qt }}"
+        path: "${{ github.workspace }}/build/package"
