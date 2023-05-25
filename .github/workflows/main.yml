@@ -320,7 +320,6 @@ jobs:
       run: |
         cmake --build "build/ci" --config RelWithDebInfo --target install
     - name: 'Packaging: Install Packages'
-      if: startsWith( matrix.runner, 'macos' )
       shell: bash
       run: |
         curl -kL https://cdn.xaymar.com/ci/Packages-1.2.10.dmg -f --retry 5 -o "Packages.dmg"
@@ -328,9 +327,10 @@ jobs:
         pushd /Volumes/Packages*
         sudo installer -pkg ./Install\ Packages.pkg -target /
     - name: "Packaging"
-      shell: cmd
+      if: startsWith( matrix.runner, 'macos' )
+      shell: bash
       run: |
-        "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /V10 ".\build\ci\installer.iss"
+        packagesbuild "${{ github.workspace }}/build/ci/installer.pkgproj"
     - name: "Artifacts"
       uses: actions/upload-artifact@v1
       with:
